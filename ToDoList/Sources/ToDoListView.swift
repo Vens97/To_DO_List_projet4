@@ -7,13 +7,24 @@ struct ToDoListView: View {
     @State private var isAddingTodo = false
     
     // New state for filter index
-    @State private var filterIndex = 0
-    
+    @State private var filterIndex = 0 {
+        didSet {
+            viewModel.applyFilter(at: filterIndex)
+        }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
                 // Filter selector
-                // TODO: - Add a filter selector which will call the viewModel for updating the displayed data
+                Picker("Filter", selection: $filterIndex) {
+                    Text("All").tag(0)
+                    Text("Done").tag(1)
+                    Text("No Done").tag(2)
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                .padding()
+
                 // List of tasks
                 List {
                     ForEach(viewModel.toDoItems) { item in
@@ -39,7 +50,7 @@ struct ToDoListView: View {
                         }
                     }
                 }
-                
+
                 // Sticky bottom view for adding todos
                 if isAddingTodo {
                     HStack {
@@ -47,7 +58,7 @@ struct ToDoListView: View {
                             .padding(.leading)
 
                         Spacer()
-                        
+
                         Button(action: {
                             if newTodoTitle.isEmpty {
                                 isShowingAlert = true
@@ -72,7 +83,7 @@ struct ToDoListView: View {
                     .shadow(radius: 5)
                     .padding(.horizontal)
                 }
-                
+
                 // Button to toggle the bottom add view
                 Button(action: {
                     isAddingTodo.toggle()
