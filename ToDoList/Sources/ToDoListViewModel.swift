@@ -1,15 +1,20 @@
 import SwiftUI
 
+/// ViewModel pour gérer la logique de la liste des tâches
 final class ToDoListViewModel: ObservableObject {
     // MARK: - Private properties
     
+    // Repository pour charger et sauvegarder les tâches
     private let repository: ToDoListRepositoryType
+    // Liste de toutes les tâches sans filtrage
     private var allToDoItems: [ToDoItem] = []
     
     // MARK: - Init
     
+    /// Initialisation du ViewModel avec le repository
     init(repository: ToDoListRepositoryType) {
         self.repository = repository
+        // Charger les tâches depuis le repository
         let items = repository.loadToDoItems()
         self.allToDoItems = items
         self.toDoItems = items
@@ -17,36 +22,44 @@ final class ToDoListViewModel: ObservableObject {
     
     // MARK: - Outputs
     
-    /// Publisher for the list of to-do items.
+    /// Publisher pour la liste des tâches à afficher
     @Published var toDoItems: [ToDoItem] = [] {
         didSet {
+            // Sauvegarder les tâches à chaque mise à jour
             repository.saveToDoItems(toDoItems)
         }
     }
     
     // MARK: - Inputs
     
-    // Add a new to-do item with priority and category
+    /// Ajouter une nouvelle tâche avec priorité et catégorie
     func add(item: ToDoItem) {
+        // Ajouter la tâche à la liste complète des tâches
         allToDoItems.append(item)
+        // Appliquer le filtre actuel pour mettre à jour la liste affichée
         applyFilter(at: currentFilterIndex)
     }
     
-    /// Toggles the completion status of a to-do item.
+    /// Basculer l'état de complétion d'une tâche
     func toggleTodoItemCompletion(_ item: ToDoItem) {
+        // Trouver l'index de la tâche dans la liste complète
         if let index = allToDoItems.firstIndex(where: { $0.id == item.id }) {
+            // Basculer l'état de complétion
             allToDoItems[index].isDone.toggle()
+            // Appliquer le filtre actuel pour mettre à jour la liste affichée
             applyFilter(at: currentFilterIndex)
         }
     }
     
-    /// Removes a to-do item from the list.
+    /// Supprimer une tâche de la liste
     func removeTodoItem(_ item: ToDoItem) {
+        // Supprimer la tâche de la liste complète
         allToDoItems.removeAll { $0.id == item.id }
+        // Appliquer le filtre actuel pour mettre à jour la liste affichée
         applyFilter(at: currentFilterIndex)
     }
     
-    /// Apply the filter to update the list.
+    /// Appliquer le filtre pour mettre à jour la liste des tâches affichées
     func applyFilter(at index: Int) {
         // Met à jour l'index actuel du filtre
         currentFilterIndex = index
